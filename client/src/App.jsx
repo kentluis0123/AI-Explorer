@@ -127,7 +127,14 @@ const App = () => {
                   <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600">
                     {activeTab} Summary
                   </h3>
-                  <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
+                  <div className="flex items-center gap-2">
+                    {result.version && (
+                      <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-tighter">
+                        v{result.version}
+                      </span>
+                    )}
+                    <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
+                  </div>
                 </div>
                 <div className="prose prose-slate max-w-none">
                   {result.summary.split('\n').map((line, i) => (

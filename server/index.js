@@ -77,7 +77,8 @@ async function getSummary(topic, category) {
     return {
       summary: aiResponse.data.choices[0].message.content,
       sources: results.map(r => ({ title: r.title, url: r.url })),
-      images: searchResponse.data.images || []
+      images: searchResponse.data.images || [],
+      version: "1.2-images-enabled"
     };
   } catch (err) {
     console.error('Groq AI Error:', err.response?.status, err.response?.data || err.message);
