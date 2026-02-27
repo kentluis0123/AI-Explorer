@@ -79,16 +79,21 @@ async function getSummary(topic, category) {
 
 app.post('/api/summarize', async (req, res) => {
   const { topic, category } = req.body;
+  console.log(`Received request for topic: "${topic}", category: "${category}"`);
+  
+  if (!topic || !category) {
+    return res.status(400).json({ error: "Topic and category are required." });
+  }
+
   try {
     const data = await getSummary(topic, category);
     res.json(data);
   } catch (error) {
-    if (error.response) {
-      console.error('API Error:', error.response.status, error.response.data);
-    } else {
-      console.error('Error in /api/summarize:', error.message);
-    }
-    res.status(500).json({ error: "Failed to fetch and summarize topic." });
+    // Log the full error to Render for debugging
+    console.error('Final Error in /api/summarize:', error.message);
+    if (error.stack) console.error(error.stack);
+    
+    res.status(500).json({ error: error.message });
   }
 });
 
