@@ -33,7 +33,7 @@ async function getSummary(topic, category) {
 
   // 2. Summarize using Groq (Using a smaller, faster model for better rate limits)
   const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-    model: "llama3-8b-8192", // Changed from 70b to 8b for better rate limits
+    model: "llama-3.1-8b-instant", // Updated to the correct model name for Groq
     messages: [
       { 
         role: "system", 
@@ -60,7 +60,11 @@ app.post('/api/summarize', async (req, res) => {
     const data = await getSummary(topic, category);
     res.json(data);
   } catch (error) {
-    console.error('Error in /api/summarize:', error.message);
+    if (error.response) {
+      console.error('API Error:', error.response.status, error.response.data);
+    } else {
+      console.error('Error in /api/summarize:', error.message);
+    }
     res.status(500).json({ error: "Failed to fetch and summarize topic." });
   }
 });
