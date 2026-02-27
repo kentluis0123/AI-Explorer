@@ -17,41 +17,64 @@ const PROMPTS = {
 };
 
 async function getSummary(topic, category) {
+  if (!process.env.TAVILY_API_KEY || !process.env.GROQ_API_KEY) {
+    throw new Error('API keys are missing in environment variables');
+  }
+
   const searchQuery = `${category} about ${topic}`;
+  console.log(`Searching Tavily for: ${searchQuery}`);
   
-  // 1. Search using Tavily (Reduced to 3 results to avoid 429)
-  const searchResponse = await axios.post('https://api.tavily.com/search', {
-    api_key: process.env.TAVILY_API_KEY,
-    query: searchQuery,
-    search_depth: "basic", // Changed from "advanced" to be faster and cheaper
-    max_results: 3
-  });
+  // 1. Search using Tavily
+  let searchResponse;
+  try {
+    searchResponse = await axios.post('https://api.tavily.com/search', {
+      api_key: process.env.TAVILY_API_KEY,
+      query: searchQuery,
+      search_depth: "basic",
+      max_results: 3
+    });
+  } catch (err) {
+    console.error('Tavily Search Error:', err.response?.status, err.response?.data || err.message);
+    throw new Error(`Tavily search failed: ${err.message}`);
+  }
 
   const results = searchResponse.data.results;
-  // Truncate content to 1000 characters per result to stay under Groq token limits
+  if (!results || results.length === 0) {
+    throw new Error('No search results found for this topic.');
+  }
+
   const context = results.map(r => `Source: ${r.title}\nContent: ${r.content.substring(0, 1000)}`).join('\n\n');
 
-  // 2. Summarize using Groq (Using a smaller, faster model for better rate limits)
-  const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-    model: "llama-3.1-8b-instant", // Updated to the correct model name for Groq
-    messages: [
-      { 
-        role: "system", 
-        content: `You are an expert researcher. ${PROMPTS[category] || PROMPTS.Articles} Summarize concisely using Markdown.` 
-      },
-      { 
-        role: "user", 
-        content: `Topic: ${topic}\n\nSearch Results:\n${context}` 
+  // 2. Summarize using Groq
+  console.log('Summarizing with Groq...');
+  try {
+    const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+      model: "llama-3.1-8b-instant",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert researcher. ${PROMPTS[category] || PROMPTS.Articles} Summarize concisely using Markdown.` 
+        },
+        { 
+          role: "user", 
+          content: `Topic: ${topic}\n\nSearch Results:\n${context}` 
+        }
+      ]
+    }, {
+      headers: { 
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY.trim()}`,
+        'Content-Type': 'application/json'
       }
-    ]
-  }, {
-    headers: { 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` }
-  });
+    });
 
-  return {
-    summary: aiResponse.data.choices[0].message.content,
-    sources: results.map(r => ({ title: r.title, url: r.url }))
-  };
+    return {
+      summary: aiResponse.data.choices[0].message.content,
+      sources: results.map(r => ({ title: r.title, url: r.url }))
+    };
+  } catch (err) {
+    console.error('Groq AI Error:', err.response?.status, err.response?.data || err.message);
+    throw new Error(`AI summarization failed: ${err.message}`);
+  }
 }
 
 app.post('/api/summarize', async (req, res) => {
