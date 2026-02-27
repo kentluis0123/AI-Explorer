@@ -31,15 +31,16 @@ async function getSummary(topic, category) {
   console.log(`Searching Tavily (${category}) for: ${searchQuery}`);
   
   // 1. Search using Tavily
-  let searchResponse;
-  try {
-    searchResponse = await axios.post('https://api.tavily.com/search', {
-      api_key: process.env.TAVILY_API_KEY,
-      query: searchQuery,
-      search_depth: category === 'Studies' || category === 'Fact-Check' ? "advanced" : "basic",
-      max_results: 4 // Slightly increased for better context
-    });
-  } catch (err) {
+   let searchResponse;
+   try {
+     searchResponse = await axios.post('https://api.tavily.com/search', {
+       api_key: process.env.TAVILY_API_KEY,
+       query: searchQuery,
+       search_depth: category === 'Studies' || category === 'Fact-Check' ? "advanced" : "basic",
+       max_results: 4, // Slightly increased for better context
+       include_images: true
+     });
+   } catch (err) {
     console.error('Tavily Search Error:', err.response?.status, err.response?.data || err.message);
     throw new Error(`Tavily search failed: ${err.message}`);
   }
@@ -75,7 +76,8 @@ async function getSummary(topic, category) {
 
     return {
       summary: aiResponse.data.choices[0].message.content,
-      sources: results.map(r => ({ title: r.title, url: r.url }))
+      sources: results.map(r => ({ title: r.title, url: r.url })),
+      images: searchResponse.data.images || []
     };
   } catch (err) {
     console.error('Groq AI Error:', err.response?.status, err.response?.data || err.message);

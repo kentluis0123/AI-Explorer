@@ -103,10 +103,26 @@ const App = () => {
               </p>
             </div>
           ) : result ? (
-            <div className="flex flex-col lg:flex-row gap-6 md:gap-10 animate-fade-in">
-              
-              {/* Summary */}
-              <div className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100">
+            <div className="animate-fade-in">
+              {/* Image Gallery */}
+              {result.images && result.images.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+                  {result.images.slice(0, 4).map((img, i) => (
+                    <div key={i} className="aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+                      <img 
+                        src={img} 
+                        alt={`${topic} reference ${i + 1}`} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+                {/* Summary */}
+                <div className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600">
                     {activeTab} Summary
