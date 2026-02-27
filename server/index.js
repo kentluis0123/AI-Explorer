@@ -19,24 +19,25 @@ const PROMPTS = {
 async function getSummary(topic, category) {
   const searchQuery = `${category} about ${topic}`;
   
-  // 1. Search using Tavily
+  // 1. Search using Tavily (Reduced to 3 results to avoid 429)
   const searchResponse = await axios.post('https://api.tavily.com/search', {
     api_key: process.env.TAVILY_API_KEY,
     query: searchQuery,
-    search_depth: "advanced",
-    max_results: 6
+    search_depth: "basic", // Changed from "advanced" to be faster and cheaper
+    max_results: 3
   });
 
   const results = searchResponse.data.results;
-  const context = results.map(r => `Source: ${r.title}\nContent: ${r.content}`).join('\n\n');
+  // Truncate content to 1000 characters per result to stay under Groq token limits
+  const context = results.map(r => `Source: ${r.title}\nContent: ${r.content.substring(0, 1000)}`).join('\n\n');
 
-  // 2. Summarize using Groq (OpenAI-compatible API)
+  // 2. Summarize using Groq (Using a smaller, faster model for better rate limits)
   const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-    model: "llama3-70b-8192",
+    model: "llama3-8b-8192", // Changed from 70b to 8b for better rate limits
     messages: [
       { 
         role: "system", 
-        content: `You are an expert researcher. ${PROMPTS[category] || PROMPTS.Articles} Use Markdown for formatting.` 
+        content: `You are an expert researcher. ${PROMPTS[category] || PROMPTS.Articles} Summarize concisely using Markdown.` 
       },
       { 
         role: "user", 
