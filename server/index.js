@@ -10,10 +10,10 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 
 const PROMPTS = {
-  Articles: "Provide a comprehensive general overview. Use bullet points for key facts and define any complex terms.",
-  Studies: "Focus on empirical data, research findings, and methodologies. Summarize the scientific consensus or major discoveries.",
-  News: "Summarize the most recent developments from the last few weeks. Highlight dates, key figures, and ongoing events.",
-  'Fact-Check': "Identify common claims or potential misinformation about this topic. Cross-reference the search results to confirm or debunk these claims."
+  Articles: "Provide a comprehensive general overview of this topic. Use bullet points for key facts, history, and current significance. Focus on providing a broad understanding for a general audience.",
+  Studies: "Provide a research-focused summary. Focus on empirical data, scientific studies, academic findings, and methodologies. Highlight specific researchers, institutions, or major breakthroughs in this field.",
+  News: "Summarize the most recent developments, events, and trending news regarding this topic from the last few weeks. Highlight dates, key figures involved in current events, and ongoing controversies or updates.",
+  'Fact-Check': "Critically analyze this topic to identify common myths, claims, or potential misinformation. Use the provided search results to confirm or debunk specific statements. Provide a 'Verdict' for each major claim identified."
 };
 
 async function getSummary(topic, category) {
@@ -21,8 +21,14 @@ async function getSummary(topic, category) {
     throw new Error('API keys are missing in environment variables');
   }
 
-  const searchQuery = `${category} about ${topic}`;
-  console.log(`Searching Tavily for: ${searchQuery}`);
+  // Optimize search query based on category for better differentiation
+  let searchQuery = `${topic}`;
+  if (category === 'Studies') searchQuery = `scientific research studies and academic papers on ${topic}`;
+  else if (category === 'News') searchQuery = `latest news and recent developments on ${topic} 2024 2025`;
+  else if (category === 'Fact-Check') searchQuery = `claims myths and fact check about ${topic}`;
+  else searchQuery = `comprehensive overview and general facts about ${topic}`;
+
+  console.log(`Searching Tavily (${category}) for: ${searchQuery}`);
   
   // 1. Search using Tavily
   let searchResponse;
@@ -30,8 +36,8 @@ async function getSummary(topic, category) {
     searchResponse = await axios.post('https://api.tavily.com/search', {
       api_key: process.env.TAVILY_API_KEY,
       query: searchQuery,
-      search_depth: "basic",
-      max_results: 3
+      search_depth: category === 'Studies' || category === 'Fact-Check' ? "advanced" : "basic",
+      max_results: 4 // Slightly increased for better context
     });
   } catch (err) {
     console.error('Tavily Search Error:', err.response?.status, err.response?.data || err.message);
