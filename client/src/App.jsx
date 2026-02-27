@@ -17,16 +17,17 @@ const App = () => {
     { id: 'Fact-Check', label: 'Fact-Check', icon: <ShieldCheck className="w-4 h-4" /> },
   ];
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e, tabOverride = null) => {
     if (e) e.preventDefault();
     if (!topic) return;
     
+    const targetTab = tabOverride || activeTab;
     setLoading(true);
     setResult(null);
     try {
       const response = await axios.post(`${API_URL}/api/summarize`, {
         topic,
-        category: activeTab
+        category: targetTab
       });
       setResult(response.data);
     } catch (err) {
@@ -44,7 +45,7 @@ const App = () => {
         {/* Header */}
         <header className="text-center mb-10 md:mb-16">
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">
-            AI <span className="text-blue-600">Explorer</span>
+            AI <span className="text-blue-600">Research Explorer</span>
           </h1>
           <p className="text-slate-500 text-base md:text-lg max-w-md mx-auto">
             Real-time AI research and summarization at your fingertips.
@@ -74,8 +75,8 @@ const App = () => {
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id);
-                  // Optionally trigger search on tab change if topic exists
-                  // if (topic && result) handleSearch(); 
+                  // Automatically trigger search on tab change if topic exists
+                  if (topic) handleSearch(null, tab.id); 
                 }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all text-sm md:text-base ${
                   activeTab === tab.id 
