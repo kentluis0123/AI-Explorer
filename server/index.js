@@ -30,10 +30,9 @@ async function getSummary(topic, category) {
   const results = searchResponse.data.results;
   const context = results.map(r => `Source: ${r.title}\nContent: ${r.content}`).join('\n\n');
 
-  // 2. Summarize using OpenAI (or Gemini)
-  // Note: Using OpenAI gpt-4o as a placeholder. User needs to provide the key.
-  const aiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
+  // 2. Summarize using Groq (OpenAI-compatible API)
+  const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+    model: "llama3-70b-8192",
     messages: [
       { 
         role: "system", 
@@ -45,7 +44,7 @@ async function getSummary(topic, category) {
       }
     ]
   }, {
-    headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` }
+    headers: { 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` }
   });
 
   return {

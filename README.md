@@ -5,7 +5,7 @@ A responsive web application that searches for any topic and provides AI-generat
 ## Tech Stack
 - **Frontend**: React (Vite), Tailwind CSS, Lucide Icons
 - **Backend**: Node.js, Express
-- **APIs**: Tavily (Search), OpenAI (Summarization)
+- **APIs**: Tavily (Search), Groq (Summarization)
 
 ---
 
@@ -15,6 +15,7 @@ A responsive web application that searches for any topic and provides AI-generat
 - Create a [GitHub](https://github.com) account.
 - Create a [Render](https://render.com) account (for Backend).
 - Create a [Vercel](https://vercel.com) account (for Frontend).
+- Create a [Groq](https://console.groq.com) account for free AI.
 
 ### 2. Upload to GitHub
 1. Open your terminal in this folder.
@@ -39,7 +40,7 @@ A responsive web application that searches for any topic and provides AI-generat
    - **Build Command**: `npm install`
    - **Start Command**: `node index.js`
 5. **Environment Variables** (Add these):
-   - `OPENAI_API_KEY`: Your OpenAI API Key.
+   - `GROQ_API_KEY`: Your Groq API Key.
    - `TAVILY_API_KEY`: Your Tavily API Key.
 6. Click **Create Web Service**. Copy the URL once it's live (e.g., `https://ai-summarizer-api.onrender.com`).
 
@@ -61,7 +62,7 @@ A responsive web application that searches for any topic and provides AI-generat
    ```bash
    cd server
    npm install
-   # Create a .env file with OPENAI_API_KEY and TAVILY_API_KEY
+   # Create a .env file with GROQ_API_KEY and TAVILY_API_KEY
    node index.js
    ```
 2. **Frontend**:
