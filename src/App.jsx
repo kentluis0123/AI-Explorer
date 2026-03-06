@@ -43,12 +43,12 @@ const App = () => {
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-16">
         
         {/* Header */}
-        <header className="text-center mb-10 md:mb-16 bg-blue-600 p-10 rounded-3xl text-white">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4">
-            AI Explorer SYNC-FORCE
+        <header className="text-center mb-10 md:mb-16">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">
+            AI <span className="text-blue-600">Explorer</span>
           </h1>
-          <p className="text-blue-100 text-base md:text-lg max-w-md mx-auto">
-            If you see this blue background, the site is finally updated!
+          <p className="text-slate-500 text-base md:text-lg max-w-md mx-auto">
+            Real-time AI research and summarization at your fingertips.
           </p>
         </header>
         
