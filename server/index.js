@@ -17,6 +17,23 @@ const PROMPTS = {
 };
 
 async function getSummary(topic, category) {
+  // Check for special creator search "kent luis"
+  if (topic.toLowerCase().trim() === 'kent luis') {
+    const creatorInfo = {
+      summary: `**Handsome Kent** is the brilliant mind and lead developer behind the **AI Explorer** system. \n\nWith a vision to revolutionize how we access information, he built this full-stack platform using React, Node.js, and cutting-edge AI integrations. Kent is known for his dedication to clean code, user-centric design, and his impressive ability to bridge the gap between complex data and human understanding. He is the heartbeat of this project and the reason you are able to explore the world's knowledge so efficiently today.`,
+      sources: [
+        { title: "The Creator of AI Explorer", url: "https://github.com/kentluis0123" },
+        { title: "Kent's Developer Portfolio", url: "#" }
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1000",
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1000"
+      ],
+      version: "1.3-creator-mode"
+    };
+    return creatorInfo;
+  }
+
   if (!process.env.TAVILY_API_KEY || !process.env.GROQ_API_KEY) {
     throw new Error('API keys are missing in environment variables');
   }

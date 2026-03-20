@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { Search, BookOpen, Newspaper, GraduationCap, ShieldCheck, Loader2, ExternalLink, X } from 'lucide-react';
+import { Search, BookOpen, Newspaper, GraduationCap, ShieldCheck, Loader2, ExternalLink } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const App = () => {
   const [topic, setTopic] = useState('');
   const [activeTab, setActiveTab] = useState('Articles');
-  const [results, setResults] = useState({}); // Cache for each category
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null); // For fullscreen modal
 
   const tabs = [
     { id: 'Articles', label: 'Overview', icon: <BookOpen className="w-4 h-4" /> },
@@ -18,33 +17,19 @@ const App = () => {
     { id: 'Fact-Check', label: 'Fact-Check', icon: <ShieldCheck className="w-4 h-4" /> },
   ];
 
-  // Clear cache if topic changes
-  useEffect(() => {
-    setResults({});
-  }, [topic]);
-
   const handleSearch = async (e, tabOverride = null) => {
     if (e) e.preventDefault();
     if (!topic) return;
     
     const targetTab = tabOverride || activeTab;
-
-    // If we already have the result for this tab and topic, don't search again
-    if (results[targetTab]) {
-      setActiveTab(targetTab);
-      return;
-    }
-
     setLoading(true);
+    setResult(null);
     try {
       const response = await axios.post(`${API_URL}/api/summarize`, {
         topic,
         category: targetTab
       });
-      setResults(prev => ({
-        ...prev,
-        [targetTab]: response.data
-      }));
+      setResult(response.data);
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please ensure the backend is running and API keys are set.");
@@ -53,40 +38,17 @@ const App = () => {
     }
   };
 
-  const currentResult = results[activeTab];
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-100 font-sans">
-      {/* Fullscreen Image Modal */}
-      {selectedImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-10 animate-fade-in"
-          onClick={() => setSelectedImage(null)}
-        >
-          <button 
-            className="absolute top-6 right-6 text-white hover:text-blue-400 transition-colors"
-            onClick={() => setSelectedImage(null)}
-          >
-            <X className="w-8 h-8" />
-          </button>
-          <img 
-            src={selectedImage} 
-            alt="Fullscreen view" 
-            className="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-16">
         
         {/* Header */}
-        <header className="text-center mb-10 md:mb-16">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">
-            AI <span className="text-blue-600">Explorer</span>
+        <header className="text-center mb-10 md:mb-16 bg-blue-600 p-10 rounded-3xl text-white">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4">
+            AI Explorer SYNC-FORCE
           </h1>
-          <p className="text-slate-500 text-base md:text-lg max-w-md mx-auto">
-            Real-time AI research and summarization at your fingertips.
+          <p className="text-blue-100 text-base md:text-lg max-w-md mx-auto">
+            If you see this blue background, the site is finally updated!
           </p>
         </header>
         
@@ -113,8 +75,8 @@ const App = () => {
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id);
-                  // Automatically trigger search on tab change if topic exists and no cached result
-                  if (topic && !results[tab.id]) handleSearch(null, tab.id); 
+                  // Automatically trigger search on tab change if topic exists
+                  if (topic) handleSearch(null, tab.id); 
                 }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all text-sm md:text-base ${
                   activeTab === tab.id 
@@ -141,21 +103,17 @@ const App = () => {
                 AI is researching {activeTab} for "{topic}"...
               </p>
             </div>
-          ) : currentResult ? (
+          ) : result ? (
             <div className="animate-fade-in">
               {/* Image Gallery */}
-              {currentResult.images && currentResult.images.length > 0 && (
+              {result.images && result.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-                  {currentResult.images.slice(0, 4).map((img, i) => (
-                    <div 
-                      key={i} 
-                      className="aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 cursor-zoom-in group/img"
-                      onClick={() => setSelectedImage(img)}
-                    >
+                  {result.images.slice(0, 4).map((img, i) => (
+                    <div key={i} className="aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
                       <img 
                         src={img} 
                         alt={`${topic} reference ${i + 1}`} 
-                        className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                         onError={(e) => e.target.style.display = 'none'}
                       />
                     </div>
@@ -171,16 +129,16 @@ const App = () => {
                     {activeTab} Summary
                   </h3>
                   <div className="flex items-center gap-2">
-                    {currentResult.version && (
+                    {result.version && (
                       <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-tighter">
-                        v{currentResult.version}
+                        v{result.version}
                       </span>
                     )}
                     <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
                   </div>
                 </div>
                 <div className="prose prose-slate max-w-none">
-                  {currentResult.summary.split('\n').map((line, i) => (
+                  {result.summary.split('\n').map((line, i) => (
                     <p key={i} className="text-slate-700 leading-relaxed text-base md:text-lg mb-4 last:mb-0">
                       {line}
                     </p>
@@ -195,7 +153,7 @@ const App = () => {
                   Verified Sources
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                  {currentResult.sources.map((source, i) => (
+                  {result.sources.map((source, i) => (
                     <a 
                       key={i} 
                       href={source.url} 
@@ -217,8 +175,7 @@ const App = () => {
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
+          ) : (
             <div className="text-center py-24 md:py-40 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 transition-colors hover:border-slate-300">
               <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="text-slate-300 w-8 h-8" />
