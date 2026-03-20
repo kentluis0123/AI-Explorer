@@ -70,6 +70,7 @@ const App = () => {
         {/* Tabs - Mobile Scrollable */}
         <div className="flex overflow-x-auto pb-4 md:pb-0 md:justify-center gap-2 no-scrollbar">
           <div className="flex bg-slate-200/50 p-1 rounded-2xl whitespace-nowrap">
+          
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -124,54 +125,55 @@ const App = () => {
               <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
                 {/* Summary */}
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                    {activeTab} Summary
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    {result.version && (
-                      <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-tighter">
-                        v{result.version}
-                      </span>
-                    )}
-                    <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600">
+                      {activeTab} Summary
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {result.version && (
+                        <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-tighter">
+                          v{result.version}
+                        </span>
+                      )}
+                      <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
+                    </div>
+                  </div>
+                  <div className="prose prose-slate max-w-none">
+                    {result.summary.split('\n').map((line, i) => (
+                      <p key={i} className="text-slate-700 leading-relaxed text-base md:text-lg mb-4 last:mb-0">
+                        {line}
+                      </p>
+                    ))}
                   </div>
                 </div>
-                <div className="prose prose-slate max-w-none">
-                  {result.summary.split('\n').map((line, i) => (
-                    <p key={i} className="text-slate-700 leading-relaxed text-base md:text-lg mb-4 last:mb-0">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
 
-              {/* Sidebar Sources */}
-              <div className="w-full lg:w-80 shrink-0">
-                <h3 className="text-sm font-bold text-slate-900 mb-4 px-2 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-slate-400" />
-                  Verified Sources
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                  {result.sources.map((source, i) => (
-                    <a 
-                      key={i} 
-                      href={source.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex flex-col p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all group"
-                    >
-                      <span className="text-slate-800 text-sm font-semibold line-clamp-2 group-hover:text-blue-600 mb-2 transition-colors">
-                        {source.title}
-                      </span>
-                      <div className="flex items-center justify-between mt-auto">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold">
-                          {new URL(source.url).hostname.replace('www.', '')}
+                {/* Sidebar Sources */}
+                <div className="w-full lg:w-80 shrink-0">
+                  <h3 className="text-sm font-bold text-slate-900 mb-4 px-2 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-slate-400" />
+                    Verified Sources
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                    {result.sources.map((source, i) => (
+                      <a 
+                        key={i} 
+                        href={source.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex flex-col p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all group"
+                      >
+                        <span className="text-slate-800 text-sm font-semibold line-clamp-2 group-hover:text-blue-600 mb-2 transition-colors">
+                          {source.title}
                         </span>
-                        <ExternalLink className="w-3 h-3 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                      </div>
-                    </a>
-                  ))}
+                        <div className="flex items-center justify-between mt-auto">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold">
+                            {new URL(source.url).hostname.replace('www.', '')}
+                          </span>
+                          <ExternalLink className="w-3 h-3 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
