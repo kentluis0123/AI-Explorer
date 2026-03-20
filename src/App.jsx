@@ -176,7 +176,8 @@ const App = () => {
                 </div>
               </div>
             </div>
-          ) : (
+          </div>
+        ) : (
             <div className="text-center py-24 md:py-40 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 transition-colors hover:border-slate-300">
               <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="text-slate-300 w-8 h-8" />
