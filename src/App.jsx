@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, BookOpen, Newspaper, GraduationCap, ShieldCheck, Loader2, ExternalLink } from 'lucide-react';
+import { Search, BookOpen, Newspaper, GraduationCap, ShieldCheck, Loader2, ExternalLink, X } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const App = () => {
   const [topic, setTopic] = useState('');
   const [activeTab, setActiveTab] = useState('Articles');
-  const [result, setResult] = useState(null);
+  const [results, setResults] = useState({}); // Cache for each category
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null); // For fullscreen modal
 
   const tabs = [
     { id: 'Articles', label: 'Overview', icon: <BookOpen className="w-4 h-4" /> },
@@ -17,19 +18,33 @@ const App = () => {
     { id: 'Fact-Check', label: 'Fact-Check', icon: <ShieldCheck className="w-4 h-4" /> },
   ];
 
+  // Clear cache if topic changes
+  useEffect(() => {
+    setResults({});
+  }, [topic]);
+
   const handleSearch = async (e, tabOverride = null) => {
     if (e) e.preventDefault();
     if (!topic) return;
     
     const targetTab = tabOverride || activeTab;
+
+    // If we already have the result for this tab and topic, don't search again
+    if (results[targetTab]) {
+      setActiveTab(targetTab);
+      return;
+    }
+
     setLoading(true);
-    setResult(null);
     try {
       const response = await axios.post(`${API_URL}/api/summarize`, {
         topic,
         category: targetTab
       });
-      setResult(response.data);
+      setResults(prev => ({
+        ...prev,
+        [targetTab]: response.data
+      }));
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please ensure the backend is running and API keys are set.");
@@ -38,8 +53,31 @@ const App = () => {
     }
   };
 
+  const currentResult = results[activeTab];
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-100 font-sans">
+      {/* Fullscreen Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-10 animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 text-white hover:text-blue-400 transition-colors"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <img 
+            src={selectedImage} 
+            alt="Fullscreen view" 
+            className="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-16">
         
         {/* Header */}
@@ -70,14 +108,13 @@ const App = () => {
         {/* Tabs - Mobile Scrollable */}
         <div className="flex overflow-x-auto pb-4 md:pb-0 md:justify-center gap-2 no-scrollbar">
           <div className="flex bg-slate-200/50 p-1 rounded-2xl whitespace-nowrap">
-          
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id);
-                  // Automatically trigger search on tab change if topic exists
-                  if (topic) handleSearch(null, tab.id); 
+                  // Automatically trigger search on tab change if topic exists and no cached result
+                  if (topic && !results[tab.id]) handleSearch(null, tab.id); 
                 }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all text-sm md:text-base ${
                   activeTab === tab.id 
@@ -104,17 +141,21 @@ const App = () => {
                 AI is researching {activeTab} for "{topic}"...
               </p>
             </div>
-          ) : result ? (
+          ) : currentResult ? (
             <div className="animate-fade-in">
               {/* Image Gallery */}
-              {result.images && result.images.length > 0 && (
+              {currentResult.images && currentResult.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-                  {result.images.slice(0, 4).map((img, i) => (
-                    <div key={i} className="aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+                  {currentResult.images.slice(0, 4).map((img, i) => (
+                    <div 
+                      key={i} 
+                      className="aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 cursor-zoom-in group/img"
+                      onClick={() => setSelectedImage(img)}
+                    >
                       <img 
                         src={img} 
                         alt={`${topic} reference ${i + 1}`} 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500"
                         onError={(e) => e.target.style.display = 'none'}
                       />
                     </div>
@@ -130,16 +171,16 @@ const App = () => {
                       {activeTab} Summary
                     </h3>
                     <div className="flex items-center gap-2">
-                      {result.version && (
+                      {currentResult.version && (
                         <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-tighter">
-                          v{result.version}
+                          v{currentResult.version}
                         </span>
                       )}
                       <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-400 font-bold tracking-tighter">AI RESEARCHED</span>
                     </div>
                   </div>
                   <div className="prose prose-slate max-w-none">
-                    {result.summary.split('\n').map((line, i) => (
+                    {currentResult.summary.split('\n').map((line, i) => (
                       <p key={i} className="text-slate-700 leading-relaxed text-base md:text-lg mb-4 last:mb-0">
                         {line}
                       </p>
@@ -154,7 +195,7 @@ const App = () => {
                     Verified Sources
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                    {result.sources.map((source, i) => (
+                    {currentResult.sources.map((source, i) => (
                       <a 
                         key={i} 
                         href={source.url} 
