@@ -45,7 +45,7 @@ const App = () => {
         {/* Header */}
         <header className="text-center mb-10 md:mb-16">
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-4">
-            AI <span className="text-blue-600">Explorer</span>
+            AI <span className="text-blue-600">Explorer</span> <span className="text-[10px] text-slate-300">v1.4</span>
           </h1>
           <p className="text-slate-500 text-base md:text-lg max-w-md mx-auto">
             Real-time AI research and summarization at your fingertips.
